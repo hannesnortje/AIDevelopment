@@ -1,17 +1,35 @@
+from langgraph_scrum.llm import get_llm
 from langgraph_scrum.state import ScrumState, Ticket
+from langchain_core.messages import SystemMessage, HumanMessage
 import uuid
 from datetime import datetime
 
 async def product_owner_node(state: ScrumState) -> ScrumState:
-    """Analyze requirements and create user stories."""
+    """Analyze requirements and create user stories using configured LLM."""
     print("--- Planning: Product Owner analyzing requirements ---")
     
-    # Mocking LLM requirement analysis for initial setup
     requirements = state.get("requirements", "")
+    agents = state.get("agents", {})
+    po_config = agents.get("product_owner", {}).get("config", {})
     
-    # In real implementation: Call LLM with requirements
+    try:
+        llm = get_llm(po_config)
+        
+        # System prompt from config or default
+        system_prompt = po_config.get("role_description", "You are an expert Product Owner. Analyze requirements and break them down.")
+        
+        response = llm.invoke([
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=f"Analyze these requirements: {requirements}")
+        ])
+        
+        content = response.content
+        print(f"[Product Owner] Analysis complete (Length: {len(content)})")
+    except Exception as e:
+        print(f"[Product Owner] LLM Error: {e}. Falling back to mock.")
+        content = f"Analyzed requirements (Mock due to error: {e})"
     
-    return {"messages": [{"role": "product_owner", "content": "Analyzed requirements"}]}
+    return {"messages": [{"role": "product_owner", "content": content}]}
 
 async def architect_node(state: ScrumState) -> ScrumState:
     """Design authentication system and create tickets."""

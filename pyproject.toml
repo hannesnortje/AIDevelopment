@@ -21,6 +21,7 @@ chromadb = "*"
 pydantic-settings = "*"
 python-dotenv = "*"
 rich = "*"
+langchain-google-genai = "^4.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
@@ -34,7 +35,7 @@ types-requests = "*"
 
 [tool.poetry.group.test.dependencies]
 pytest-asyncio = "^1.3.0"
-websockets = "^16.0"
+websockets = ">=14.0,<15.0"
 
 [tool.poetry.scripts]
 scrum-server = "langgraph_scrum.server:main"

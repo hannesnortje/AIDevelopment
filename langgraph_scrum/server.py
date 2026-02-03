@@ -9,6 +9,7 @@ from langgraph_scrum.state import ScrumState
 
 from langgraph_scrum.tmux import get_tmux_manager
 from langgraph_scrum.knowledge import KnowledgeManager
+from langgraph_scrum.config import config
 
 # Compile the graph
 graph_app = create_workflow()
@@ -76,6 +77,14 @@ async def websocket_endpoint(websocket: WebSocket):
             if message.get("type") == "start_project":
                 # Start graph execution in background
                 asyncio.create_task(run_graph(message, websocket))
+            
+            elif message.get("type") == "update_config":
+                # Update configuration
+                new_config = message.get("config", {})
+                config.update(new_config)
+                print(f"[Server] Configuration updated: {list(new_config.keys())}")
+                # Acknowledge
+                await websocket.send_json({"type": "config_updated", "config": new_config})
                 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
@@ -83,7 +92,34 @@ async def websocket_endpoint(websocket: WebSocket):
 async def run_graph(init_data: dict, websocket: WebSocket):
     """Run the LangGraph workflow."""
     concept = init_data.get("concept", "New Project")
+    # Parse requested agents which is now a list of dicts: {id, name, config: {...}}
+    requested_agents_list = init_data.get("agents", [])
     
+    # If legacy client sends list of strings, handle it
+    if requested_agents_list and isinstance(requested_agents_list[0], str):
+        requested_agents = {
+            aid: {"state": "idle", "current_ticket": None, "config": {}} 
+            for aid in requested_agents_list
+        }
+    else:
+        # Advanced config
+        requested_agents = {}
+        for agent_def in requested_agents_list:
+            aid = agent_def["id"]
+            requested_agents[aid] = {
+                "state": "idle",
+                "current_ticket": None,
+                "name": agent_def.get("name"),
+                "config": agent_def.get("config", {})
+            }
+        
+    if not requested_agents:
+         # Default fallback
+         requested_agents = {
+            "product_owner": {"state": "idle", "config": {}},
+            "architect": {"state": "idle", "config": {}}
+         }
+
     # Load state if exists
     state_data = None
     if knowledge:
@@ -93,7 +129,6 @@ async def run_graph(init_data: dict, websocket: WebSocket):
         initial_state = state_data
         print("[Server] Resuming project from saved state")
     else:
-        # Initial State
         initial_state = ScrumState(
             project_name="My Project",
             requirements=concept,
@@ -101,7 +136,7 @@ async def run_graph(init_data: dict, websocket: WebSocket):
             tickets=[],
             active_tickets={},
             completed_tickets=[],
-            agents={},
+            agents=requested_agents,
             branches=[],
             pending_merges=[],
             conflicts=[],
