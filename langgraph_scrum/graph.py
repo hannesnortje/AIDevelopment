@@ -8,6 +8,7 @@ from langgraph_scrum.nodes import (
     dispatch_logic,
     agent_work,
     git_merge_node,
+    git_agent_node,
     tester_node,
     reviewer_node,
     sprint_review_node,
@@ -26,6 +27,7 @@ def create_workflow():
     # Development
     workflow.add_node("dispatch", dispatch_node)
     workflow.add_node("agent_work", agent_work)
+    workflow.add_node("git_agent", git_agent_node) # New node
     workflow.add_node("git_merge", git_merge_node)
     
     # Review
@@ -42,8 +44,10 @@ def create_workflow():
     workflow.add_edge("user_approval", "dispatch")
     
     # Development Flow
-    workflow.add_conditional_edges("dispatch", dispatch_logic) # This node returns Sends
-    workflow.add_edge("agent_work", "git_merge")
+    workflow.add_conditional_edges("dispatch", dispatch_logic)
+    workflow.add_edge("agent_work", "git_agent") # Check with git agent after work? 
+    # Or maybe parallel... for now make it linear: Work -> Git Agent -> Merge -> Tester
+    workflow.add_edge("git_agent", "git_merge")
     workflow.add_edge("git_merge", "tester")
     
     # Review Flow
