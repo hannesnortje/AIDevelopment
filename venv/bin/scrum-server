@@ -1,6 +1,0 @@
-#!/media/hannesn/storage/Code/Personal/AIDevelopment/venv/bin/python
-import sys
-from langgraph_scrum.server import main
-
-if __name__ == '__main__':
-    sys.exit(main())
