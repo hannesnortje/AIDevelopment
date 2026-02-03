@@ -12,3 +12,4 @@ htmlcov/
 .mypy_cache/
 *.log
 .worktrees/
+.langgraph/data/
