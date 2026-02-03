@@ -31,6 +31,11 @@ mypy = "*"
 types-pyyaml = "*"
 types-requests = "*"
 
+
+[tool.poetry.group.test.dependencies]
+pytest-asyncio = "^1.3.0"
+websockets = "^16.0"
+
 [tool.poetry.scripts]
 scrum-server = "langgraph_scrum.server:main"
 scrum-cli = "langgraph_scrum.cli:main"
