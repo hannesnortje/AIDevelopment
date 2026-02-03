@@ -1,0 +1,3 @@
+[console_scripts]
+scrum-cli = langgraph_scrum.cli:main
+scrum-server = langgraph_scrum.server:main
