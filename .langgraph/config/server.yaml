@@ -1,0 +1,17 @@
+server:
+  host: localhost
+  port: 8765
+  log_level: info
+
+llm:
+  provider: anthropic
+  model: claude-3-5-sonnet-20240620
+  max_tokens: 4096
+
+git:
+  auto_push: false
+  worktrees_dir: .worktrees
+  branch_prefix: feature/
+
+tmux:
+  session_name: scrum-agents
