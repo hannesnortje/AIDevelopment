@@ -4,7 +4,8 @@ from langgraph_scrum.nodes import (
     product_owner_node,
     architect_node, 
     user_approval_node,
-    dispatch_agents,
+    dispatch_node,
+    dispatch_logic,
     agent_work,
     git_merge_node,
     tester_node,
@@ -23,7 +24,7 @@ def create_workflow():
     workflow.add_node("user_approval", user_approval_node)
     
     # Development
-    workflow.add_node("dispatch", dispatch_agents)
+    workflow.add_node("dispatch", dispatch_node)
     workflow.add_node("agent_work", agent_work)
     workflow.add_node("git_merge", git_merge_node)
     
@@ -41,7 +42,7 @@ def create_workflow():
     workflow.add_edge("user_approval", "dispatch")
     
     # Development Flow
-    workflow.add_conditional_edges("dispatch", dispatch_agents) # This node returns Sends
+    workflow.add_conditional_edges("dispatch", dispatch_logic) # This node returns Sends
     workflow.add_edge("agent_work", "git_merge")
     workflow.add_edge("git_merge", "tester")
     

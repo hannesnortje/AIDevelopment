@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from langgraph_scrum.graph import create_workflow
 from langgraph_scrum.state import ScrumState
 
-app = FastAPI()
+from langgraph_scrum.tmux import get_tmux_manager
 
 # Compile the graph
 graph_app = create_workflow()
@@ -28,6 +28,26 @@ class ConnectionManager:
             await connection.send_json(message)
 
 manager = ConnectionManager()
+tmux = None  # Global tmux reference
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    global tmux
+    try:
+        tmux = get_tmux_manager()
+        print("[Server] Tmux Manager initialized")
+        # Pre-create standard agent windows
+        tmux.load_layout(["product_owner", "architect", "ui_developer", "backend_developer", "git_agent"])
+    except Exception as e:
+        print(f"[Server] Failed to initialize Tmux: {e}")
+    
+    yield
+    
+    # Shutdown
+    print("[Server] Shutting down")
+
+app = FastAPI(lifespan=lifespan)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

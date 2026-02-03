@@ -1,17 +1,18 @@
 from langgraph_scrum.state import ScrumState
 from langgraph.constants import Send
 
-async def dispatch_agents(state: ScrumState):
-    """Dispatch tickets to agents using Send API."""
+async def dispatch_node(state: ScrumState) -> dict:
+    """Prepare for dispatching."""
     print("--- Development: Dispatching agents ---")
-    
+    return {}
+
+async def dispatch_logic(state: ScrumState):
+    """Routing function to dispatch tickets."""
     tickets = state.get("tickets", [])
-    pending_tickets = [t for t in tickets if t["status"] == "draft"]  # Simplified logic
+    pending_tickets = [t for t in tickets if t["status"] == "draft"]
     
     sends = []
     for ticket in pending_tickets:
-        # In a real app, logic to assign to specific agent types
-        # For now, just dispatch to 'agent_work' node
         sends.append(Send("agent_work", {"ticket": ticket}))
         
     return sends 
